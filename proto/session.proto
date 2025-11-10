@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package session;
+option go_package = "github.com/voidarchive/distributed-session-store/proto";
+
+service SessionService {
+    rpc Set(SetRequest) returns (SetResponse);
+    rpc Get(GetRequest) returns (GetResponse);
+    rpc Delete(DeleteRequest) returns (DeleteResponse);
+    rpc Replicate(stream ReplicationLog) returns (stream ReplicationAck);
+}
+
+message SetRequest {
+    string session_id = 1;
+    map<string, string> data = 2;
+    int64 ttl_seconds = 3;
+}
+
+message SetResponse {
+    bool success = 1;
+}
+
+message GetRequest {
+    string session_id = 1;
+}
+
+message GetResponse {
+    string session_id = 1;
+    map<string, string> data = 2;
+    int64 expires_at = 3;
+    bool found = 4;
+}
+
+message DeleteRequest {
+    string session_id = 1;
+}
+
+message DeleteResponse {
+    bool success = 1;
+}
+
+message ReplicationLog {
+    string operation = 1; // SET, DELETE
+    string session_id = 2;
+    map<string, string> data = 3;
+    int64 ttl_seconds = 4;
+    int64 timestamp = 5;
+}
+
+message ReplicationAck {
+    int64 timestamp = 6;
+}
